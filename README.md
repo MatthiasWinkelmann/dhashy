@@ -1,5 +1,6 @@
 # Dhashy
 
+Dhashy is a ruby gem implementing the *difference hash* algorithm for perceptual image matching.
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -19,7 +20,7 @@ Or install it yourself as:
 ## Usage
 
     first_image = MiniMagick::Image.open("test/test.jpg")
-    other_image = MiniMagick::Image.open("test/test.jpg")
+    other_image = MiniMagick::Image.open("test/8x8.jpg")
     first_hash = Dhashy.new(first_image)
 
     other_hash = Dhashy.new(other_image)
