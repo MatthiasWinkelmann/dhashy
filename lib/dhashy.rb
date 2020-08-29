@@ -15,11 +15,10 @@ class Dhashy
       return from_array(jpg) if jpg.is_a? Array
       jpg = MiniMagick::Image.open(jpg.to_s) if jpg.is_a? Pathname
       jpg.combine_options do |j|
-         j.channel_fx "Gray"
          j.resize "#{@dimension + 1}x#{@dimension + 1}!"
       end
-      gray_pixels = jpg.get_pixels.map {|x| x.map {|y| y.first }}
-      @hash = from_array(gray_pixels)
+      @pixels = jpg.get_pixels.map {|row| row.map {|p| ((p[0].to_f * 299) + (p[1] * 587) + (p[2] * 114)).to_f / 1000.0  }}
+      @h = from_array(@pixels)
    end
 
    # Our budget is spent on two square matrices:
@@ -31,12 +30,14 @@ class Dhashy
    end
 
    def size=(newsize)
-      fail "size must be integer" unless newsize.is_a? Integer
-      unless 2 * (Math.sqrt(newsize/2)**2) == newsize
-         fail "sqrt(size / 2) must be integer. Got #{newsize} with sqrt(#{newsize} / 2) = #{Math.sqrt(newsize / 2)}"
+      fail(ArgumentError, "size must be integer, got %s: %s" % [newsize, newsize.class]) unless newsize.is_a?(Numeric) 
+      fail(ArgumentError, "size must be integer, got %s: %s" % [newsize, newsize.class]) unless newsize.integer?
+      fail(ArgumentError, "size must be >= 4") unless newsize >= 4 
+      if self.dimension(newsize) !=  Math.sqrt(newsize / 2.0)
+        fail(ArgumentError, "sqrt(size / 2) must be integer, is sqrt(%s / 2) / 2 = %s" % [newsize, self.dimension(newsize)]) 
       end
       @size = newsize
-      @dimension = self.dimension(size)
+      @dimension = self.dimension(@size)
    end
 
    # (Hamming-) Distance, or visual difference
@@ -46,11 +47,11 @@ class Dhashy
    #    i. e. the number of different bits
 
    def -(other)
-      [0,1].map { |matrix| (0...@dimension).map {|x| (0...@dimension).map {|y| (@hash[matrix][x][y] == other[matrix][x][y]) ? 0 : 1 }.sum}.sum}.sum
+      [0,1].map { |matrix| (0...@dimension).map {|x| (0...@dimension).map {|y| (@h[matrix][x][y] == other[matrix][x][y]) ? 0 : 1 }.sum}.sum}.sum
    end
 
    def[](index)
-      @hash[index]
+      @h[index]
    end
 
    # Visual Equality
@@ -63,8 +64,15 @@ class Dhashy
       self - other < 5
    end
 
-   def display
-      (0...@dimension).map {|x|   [0,1].map { |matrix| (0...@dimension).map {|y| @hash[matrix][x][y] ? '1' : '0'}.join }.join(" ")}.join("\n")
+   def display(values = nil)
+    values = @h unless values
+      [1,0].map do |matrix|
+        (0...@dimension).map do |x|
+            (0...@dimension).map do |y| 
+              values[matrix][x][y]  ? '*' : '.'
+            end.join(" ")
+        end.join("\n")
+      end.join("\n\n") + "\n"
    end
 
    # return [String] The concatenated row- and
@@ -75,7 +83,7 @@ class Dhashy
       [0,1].map do |matrix|
          (0...@dimension).map do |x|
             (0...@dimension).map do |y|
-               @hash[matrix][x][y] ? '1' : '0'
+               @h[matrix][x][y] ? '1' : '0'
             end.join
          end.join("\n")
       end.join("\n")
@@ -85,7 +93,7 @@ class Dhashy
       [0,1].map do |matrix|
          (0...@dimension).map do |x|
             (0...@dimension).map do |y|
-               @hash[matrix][x][y] ? '1' : '0'
+               @h[matrix][x][y] ? 1 : 0
             end.join
          end.join
       end.join
@@ -97,19 +105,25 @@ class Dhashy
       [0,1].map do |matrix|
          (0...@dimension).map do |x|
             (0...@dimension).map do |y|
-               @hash[x][y] * 2**(x*y)
+               @h[x][y] * 2**(x*y)
             end
          end
       end
       .sum
    end
-
+   
    private
-
-   def from_array(jpg)
-      [
-         (0...@dimension).map { |x| (0...@dimension).map { |y| (jpg[y][x] <= jpg[y][x+1] ) }},
-         (0...@dimension).map { |x| (0...@dimension).map { |y| (jpg[y][x] <= jpg[y+1][x]) }}
-      ]
+   def from_array(gray)
+    [:rows, :cols].map do |direction| 
+        (0...@dimension).map do |y| 
+          (0...@dimension).map do |x|
+            if direction == :rows
+              gray[x][y] <= gray[x+1][y]
+            else
+              gray[x][y] <= gray[x][y+1]
+            end
+          end
+        end
+      end
    end
 end

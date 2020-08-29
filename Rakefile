@@ -9,19 +9,15 @@ end
 task :tree do |t|
    require '../minimagick/lib/mini_magick'
    require './lib/dhashy'
-
+   IMAGEDIR = "./test/fixtures/images"
    results = []
-   (0..9).each do |folder|
-      ff = "../chill/data/images/004/%03i/???/1.jpg" % folder
-      puts ff
-      Pathname.glob(ff).combination(2).to_a.shuffle.each do |first, second|
-         puts "#{first} #{second}"
-         f1 = Dhashy.new(first)
-         f2 = Dhashy.new(second)
-         diff = f1 - f2
-         results << diff
-         puts "difference %2i avg %2i" % [diff, results.sum / results.size]
-      end
+   Pathname(IMAGEDIR).glob("*.jpg").combination(2).to_a.shuffle.each do |first, second|
+      puts "#{first} #{second}"
+      f1 = Dhashy.new(first)
+      f2 = Dhashy.new(second)
+      diff = f1 - f2
+      results << diff
+      puts "difference %2i avg %2i" % [diff, results.sum / results.size]
    end
 end
 
