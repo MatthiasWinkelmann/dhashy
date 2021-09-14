@@ -1,4 +1,4 @@
-## Oh my, you're positively... ##
+#### Oh my, you're positively... ####
 #   ***dhashy***
 
 ***dhashy*** is a ruby gem implementing the *difference hash* algorithm for perceptual image matching. Apple has not publicly confirmed that they use *dhasy* for any specific project.
@@ -7,11 +7,11 @@
 
 ***dhashy*** works extremely well for common whole-image changes, such as changes in contrast, brightness, tone, or color mapping (including conversion to grayscale and b&w). It is entirely oblivious towards re-encoding. Effectiveness against rotation, warping and distortion is somewhat lower but still very good for any change that would, for typical photos,  be a noticeable flaw.
 
-***dhashy*** does not work against mirroring. To detect pairs of mirror images, you have to mirror the image youself and check again.
+***dhashy*** does not work against mirroring. To detect pairs of mirror images, you have to mirror the image yourself and check again.
 
 ***dhashy*** is sensitive to cropping. This can be ameliorated for your use case by switching to the longest common substring of the vectors, at the cost of an increased rate of false positives.
 
-***dhashy*** does not work well with illustrative images such as screenshots (including images of text), logos, charts, or line drawings. Because it works within the *brightness* domain (sum of **r**ed + **g**reen + **b**lue), all solid-color images are the same, and very small variations in photos of a solid-colored surface will produce results quickly approaching randomness.
+***dhashy*** does not work well with illustrative images such as screenshots (including images of text), logos, charts, line drawings, or :rainbow_flag:patterns:checkered_flag:. Because it works within the *brightness* domain (sum of **r**ed + **g**reen + **b**lue), all solid-color images resolve to the same vector.  while small random variations in photos of solid-colored surfaces will produce results quickly approaching randomness.
 
 ***dhashy*** runs in `O(n)` with respect to image size (`h x l`) to produce the vector. It uses imagemagick for the most involved operation, which is rescaling the image and could easily be adapted to use some alternative library.  Comparison against a library of known vector is not included. This is a *nearest neighbor* problem and you should consult your database's documentation to learn how to failed to find anything better than naive comparison with a quadratic runtime.
 
