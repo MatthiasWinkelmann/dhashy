@@ -18,6 +18,8 @@ Gem::Specification.new do |spec|
     f.match(%r{^(test|spec)/})
   end
 
+  spec.required_ruby_version = ">=2.4"
+  
   spec.require_paths = ["lib"]
   spec.add_dependency "mini_magick", "~> 4.1"
   spec.add_development_dependency "bundler", "~> 2.1"
